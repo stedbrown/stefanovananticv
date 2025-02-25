@@ -360,7 +360,7 @@ function App() {
             {/* AudioVisualizer posizionato sotto l'header */}
             <div className="w-full flex justify-center mb-6">
               {/* Area cliccabile limitata al blob con sfondo trasparente per evitare problemi su mobile */}
-              <div className={`w-[250px] h-[250px] pointer-events-auto relative rounded-full ${
+              <div className={`w-[250px] h-[250px] pointer-events-auto relative rounded-full z-30 ${
                 isDarkMode 
                   ? 'bg-transparent' 
                   : 'bg-transparent'

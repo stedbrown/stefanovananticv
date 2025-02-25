@@ -42,6 +42,41 @@ body {
   transition-duration: 300ms;
 }
 
+/* Transizione fluida per l'header */
+@keyframes expand {
+  from {
+    max-height: 0;
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+  to {
+    max-height: 500px;
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes collapse {
+  from {
+    max-height: 500px;
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    max-height: 0;
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+}
+
+.header-expand {
+  animation: expand 300ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.header-collapse {
+  animation: collapse 300ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
 /* Miglioramenti per dispositivi mobili */
 @media (max-width: 640px) {
   .max-h-\[50vh\] {
@@ -110,4 +145,33 @@ body {
   background-size: 200% 100%;
   animation: shimmer 3s infinite;
   pointer-events: none;
+}
+
+/* Animazioni per l'header */
+.transform-gpu {
+  transform: translateZ(0);
+  will-change: transform, opacity, max-height;
+  backface-visibility: hidden;
+}
+
+/* Transizione fluida per elementi che cambiano altezza */
+.transition-height {
+  transition-property: max-height, opacity, transform;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 300ms;
+  overflow: hidden;
+}
+
+/* Effetto di rimbalzo per i pulsanti */
+@keyframes bounce-subtle {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+.hover-bounce:hover {
+  animation: bounce-subtle 0.5s ease-in-out;
 }

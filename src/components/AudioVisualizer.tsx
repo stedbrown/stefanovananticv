@@ -550,13 +550,26 @@ const AudioVisualizer: React.FC<AudioVisualizerProps> = ({
       onMouseDown={onPressStart}
       onMouseUp={onPressEnd}
       onMouseLeave={onPressEnd}
-      onTouchStart={onPressStart}
-      onTouchEnd={onPressEnd}
+      onTouchStart={(e) => {
+        // Previeni il comportamento predefinito per evitare doppi eventi
+        e.preventDefault();
+        onPressStart();
+        // Aggiungi un timeout per gestire il click dopo il touch
+        setTimeout(() => {
+          onToggleListening();
+        }, 100);
+      }}
+      onTouchEnd={(e) => {
+        // Previeni il comportamento predefinito per evitare doppi eventi
+        e.preventDefault();
+        onPressEnd();
+      }}
       style={{
         background: 'transparent',
         backdropFilter: 'none',
         WebkitBackdropFilter: 'none',
-        touchAction: 'manipulation' // Migliora la gestione del touch su mobile
+        touchAction: 'manipulation', // Migliora la gestione del touch su mobile
+        zIndex: 40 // Assicura che il canvas sia sopra tutti gli altri elementi
       }}
     />
   );
