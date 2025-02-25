@@ -46,6 +46,8 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [userPrompt, setUserPrompt] = useState('');
   const silenceTimeoutRef = useRef<number | null>(null);
+  // Riferimento per tenere traccia se stiamo elaborando una trascrizione finale
+  const isFinalTranscriptProcessingRef = useRef(false);
   
   const { playStart, playResponse } = useSounds();
   const { audioData, averageIntensity, startAnalyzer, stopAnalyzer } = useAudioAnalyzer();
@@ -63,6 +65,15 @@ function App() {
 
   // Funzione per processare la trascrizione finale
   const processFinalTranscript = useCallback(async (text: string, stopListeningFn: () => void) => {
+    // Previeni elaborazioni multiple della stessa trascrizione
+    if (isFinalTranscriptProcessingRef.current) {
+      console.log('Elaborazione già in corso, ignoro la nuova trascrizione');
+      return;
+    }
+    
+    // Imposta il flag di elaborazione
+    isFinalTranscriptProcessingRef.current = true;
+    
     try {
       // Ferma l'ascolto quando riceviamo una trascrizione finale
       stopListeningFn();
@@ -106,6 +117,8 @@ function App() {
       }
     } finally {
       setIsLoading(false);
+      // Resetta il flag di elaborazione
+      isFinalTranscriptProcessingRef.current = false;
     }
   }, [stopAnalyzer, setBlobState, setIsLoading, setIsOutOfContext, playResponse, setResponse, setError]);
   
@@ -124,21 +137,23 @@ function App() {
   // Funzione per gestire il silenzio prolungato
   const handleSilence = useCallback(() => {
     // Se l'utente è stato in silenzio per un po', consideriamo la domanda completata
-    if (isListening && transcript.trim().length > 0) {
+    if (isListening && transcript.trim().length > 0 && !isFinalTranscriptProcessingRef.current) {
       console.log('Silenzio rilevato, elaboro la trascrizione:', transcript);
       processFinalTranscript(transcript, stopListening);
     }
-  }, [isListening, transcript, stopListening, processFinalTranscript]);
+  }, [isListening, transcript, stopListening, processFinalTranscript, isFinalTranscriptProcessingRef]);
   
   // Monitora il transcript per rilevare il silenzio
   useEffect(() => {
     // Pulisci il timeout esistente
     if (silenceTimeoutRef.current) {
       window.clearTimeout(silenceTimeoutRef.current);
+      silenceTimeoutRef.current = null;
     }
     
     // Se stiamo ascoltando e c'è un transcript, imposta un timeout per il silenzio
-    if (isListening && transcript.trim().length > 0) {
+    // Ma solo se non stiamo già elaborando una trascrizione finale
+    if (isListening && transcript.trim().length > 0 && !isFinalTranscriptProcessingRef.current) {
       silenceTimeoutRef.current = window.setTimeout(() => {
         handleSilence();
       }, 2500); // 2.5 secondi di silenzio per considerare la domanda completata
@@ -147,9 +162,10 @@ function App() {
     return () => {
       if (silenceTimeoutRef.current) {
         window.clearTimeout(silenceTimeoutRef.current);
+        silenceTimeoutRef.current = null;
       }
     };
-  }, [transcript, isListening, handleSilence]);
+  }, [transcript, isListening, handleSilence, isFinalTranscriptProcessingRef]);
   
   // Sincronizza gli errori dal riconoscimento vocale
   useEffect(() => {
@@ -188,51 +204,78 @@ function App() {
     };
   }, [isListening, isLoading, error, response, isOutOfContext]);
 
-  const toggleListening = useCallback(async () => {
-    if (!isListening) {
-      try {
-        // Resettiamo completamente la conversazione precedente quando si inizia una nuova
-        resetTranscript();
-        setResponse('');
-        setUserPrompt('');
-        setBlobState('listening');
-        
-        await startListening();
-        playStart();
-        
-        // Ottieni lo stream audio per l'analizzatore
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        startAnalyzer(stream);
-        
-        setError(null);
-        setIsOutOfContext(false);
-      } catch (error) {
-        console.error('Error starting listening:', error);
-        if (error instanceof Error) {
-          setError(error.message);
-          setBlobState('error');
-        } else {
-          setError('Si è verificato un errore durante l\'avvio del riconoscimento vocale.');
-          setBlobState('error');
-        }
-      }
-    } else {
+  // Riferimento per tenere traccia se stiamo già elaborando un click
+  const isProcessingClickRef = useRef(false);
+  
+  // Funzione per attivare/disattivare l'ascolto
+  const toggleListening = useCallback(() => {
+    // Previeni click multipli ravvicinati
+    if (isProcessingClickRef.current) {
+      console.log('Click ignorato: elaborazione già in corso');
+      return;
+    }
+    
+    // Imposta il flag di elaborazione
+    isProcessingClickRef.current = true;
+    
+    // Ripristina il flag dopo un breve ritardo
+    setTimeout(() => {
+      isProcessingClickRef.current = false;
+    }, 500); // Previene click multipli per 500ms
+    
+    if (isListening) {
+      // Se stiamo già ascoltando, interrompi
       stopListening();
       stopAnalyzer();
-      setBlobState('interrupted');
-      setTimeout(() => {
-        setBlobState('idle');
-      }, 500);
+      setBlobState('idle');
+      
+      // Resetta completamente lo stato per una nuova conversazione
+      resetTranscript();
+      setUserPrompt('');
+      setResponse('');
+      setError(null);
+      setIsOutOfContext(false);
+      
+      // Assicurati che il flag di elaborazione sia resettato
+      isFinalTranscriptProcessingRef.current = false;
+    } else {
+      // Altrimenti, inizia ad ascoltare
+      // Resetta completamente lo stato per una nuova conversazione
+      resetTranscript();
+      setUserPrompt('');
+      setResponse('');
+      setError(null);
+      setIsOutOfContext(false);
+      
+      // Assicurati che il flag di elaborazione sia resettato
+      isFinalTranscriptProcessingRef.current = false;
+      
+      // Imposta lo stato del blob su 'listening'
+      setBlobState('listening');
+      
+      // Riproduci il suono di inizio
+      playStart();
+      
+      // Avvia l'ascolto
+      startListening()
+        .then(() => {
+          console.log('Ascolto avviato con successo');
+          // Ottieni lo stream audio e avvia l'analizzatore
+          navigator.mediaDevices.getUserMedia({ audio: true })
+            .then((stream) => {
+              startAnalyzer(stream);
+            })
+            .catch((error) => {
+              console.error('Errore nell\'accesso al microfono per l\'analizzatore:', error);
+            });
+        })
+        .catch((error) => {
+          console.error('Errore durante l\'avvio dell\'ascolto:', error);
+          setError('Impossibile accedere al microfono. Verifica le autorizzazioni del browser.');
+          setBlobState('error');
+        });
     }
-  }, [
-    isListening, 
-    resetTranscript, 
-    startListening, 
-    playStart, 
-    startAnalyzer, 
-    stopListening, 
-    stopAnalyzer
-  ]);
+  }, [isListening, startListening, stopListening, stopAnalyzer, startAnalyzer, playStart, resetTranscript]);
   
   const handlePressStart = useCallback(() => {
     setIsPressed(true);
@@ -280,11 +323,11 @@ function App() {
       setTimeout(() => {
         setBlobState('idle');
       }, 3000);
-    } catch (error) {
+      } catch (error) {
       if (error instanceof Error) {
         setError(error.message);
         setBlobState('error');
-      } else {
+    } else {
         setError('Si è verificato un errore imprevisto.');
         setBlobState('error');
       }
