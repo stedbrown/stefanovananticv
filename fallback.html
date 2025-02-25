@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Assistente CV - Fallback</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      background-color: #1e293b;
+      color: white;
+    }
+    
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      text-align: center;
+      padding: 1rem;
+    }
+    
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+    
+    p {
+      margin-bottom: 1rem;
+    }
+    
+    button {
+      padding: 0.5rem 1rem;
+      background-color: #3b82f6;
+      color: white;
+      border: none;
+      border-radius: 0.25rem;
+      cursor: pointer;
+      font-size: 1rem;
+      margin-top: 1rem;
+    }
+    
+    button:hover {
+      background-color: #2563eb;
+    }
+
+    .button-link {
+      display: inline-block;
+      padding: 0.5rem 1rem;
+      background-color: #3b82f6;
+      color: white;
+      text-decoration: none;
+      border-radius: 0.25rem;
+      margin-top: 0.5rem;
+      font-size: 1rem;
+    }
+    
+    .button-link:hover {
+      background-color: #2563eb;
+    }
+
+    .error-box {
+      background-color: rgba(239, 68, 68, 0.2);
+      padding: 1rem;
+      border-radius: 0.5rem;
+      margin: 1rem 0;
+      max-width: 600px;
+    }
+
+    .options {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Assistente CV di Stefano Vananti</h1>
+    
+    <div class="error-box">
+      <p>Si è verificato un problema durante il caricamento dell'applicazione.</p>
+      <p>L'applicazione React non è riuscita a caricarsi correttamente.</p>
+      <p>Verifica la console del browser (F12) per eventuali errori.</p>
+    </div>
+    
+    <div class="options">
+      <p>Puoi provare una delle seguenti opzioni:</p>
+      
+      <button onclick="window.location.href='/'">Riprova a caricare l'applicazione</button>
+      
+      <a href="/simple-app.html" class="button-link">Visualizza la versione semplificata</a>
+      
+      <p style="margin-top: 1.5rem; opacity: 0.7;">
+        Se il problema persiste, contatta l'amministratore del sito.
+      </p>
+    </div>
+  </div>
+
+  <script>
+    // Registra informazioni sul browser
+    console.log('Informazioni sul browser:', {
+      userAgent: navigator.userAgent,
+      language: navigator.language,
+      cookieEnabled: navigator.cookieEnabled,
+      onLine: navigator.onLine,
+      platform: navigator.platform
+    });
+  </script>
+</body>
+</html> 
