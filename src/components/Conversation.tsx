@@ -63,6 +63,7 @@ const Conversation: React.FC<ConversationProps> = ({
         zIndex: 20
       }}
     >
+      {/* Mostra i suggerimenti solo se non c'è una conversazione in corso */}
       {!transcript && !response && !isLoading && (
         <div className={`text-center p-4 ${isDarkMode ? 'text-white/80' : 'text-gray-700'}`}>
           <p className="font-medium mb-4">Fai una domanda sul CV di Stefano Vananti</p>
@@ -89,7 +90,8 @@ const Conversation: React.FC<ConversationProps> = ({
         </div>
       )}
       
-      {transcript && (
+      {/* Mostra il messaggio dell'utente se c'è un transcript o una risposta in arrivo */}
+      {(transcript || isLoading || response) && (
         <Message
           type="user"
           content={transcript}
@@ -97,6 +99,7 @@ const Conversation: React.FC<ConversationProps> = ({
         />
       )}
       
+      {/* Mostra l'indicatore di caricamento durante l'elaborazione della risposta */}
       {isLoading && (
         <Message
           type="ai"
@@ -106,7 +109,8 @@ const Conversation: React.FC<ConversationProps> = ({
         />
       )}
       
-      {response && (
+      {/* Mostra la risposta dell'AI quando è disponibile e non stiamo caricando */}
+      {response && !isLoading && (
         <Message
           type="ai"
           content={response}

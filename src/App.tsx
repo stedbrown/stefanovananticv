@@ -68,6 +68,13 @@ function App() {
       stopListeningFn();
       stopAnalyzer();
       
+      // Aggiorna userPrompt con il testo trascritto
+      setUserPrompt(text);
+      
+      // Resetta la risposta precedente
+      setResponse('');
+      
+      // Avvia il processo di risposta
       setIsLoading(true);
       setBlobState('responding');
       
@@ -184,17 +191,11 @@ function App() {
   const toggleListening = useCallback(async () => {
     if (!isListening) {
       try {
-        // Resettiamo la risposta precedente se si inizia una nuova conversazione
-        if (transcript) {
-          resetTranscript();
-          setBlobState('interrupted');
-          setTimeout(() => {
-            setBlobState('listening');
-          }, 500);
-        } else {
-          setResponse('');
-          setBlobState('listening');
-        }
+        // Resettiamo completamente la conversazione precedente quando si inizia una nuova
+        resetTranscript();
+        setResponse('');
+        setUserPrompt('');
+        setBlobState('listening');
         
         await startListening();
         playStart();
@@ -225,7 +226,6 @@ function App() {
     }
   }, [
     isListening, 
-    transcript, 
     resetTranscript, 
     startListening, 
     playStart, 
@@ -249,7 +249,7 @@ function App() {
   // Funzione per gestire i prompt suggeriti
   const handlePromptSelect = useCallback(async (prompt: string) => {
     try {
-      // Resetta lo stato precedente
+      // Resetta completamente lo stato precedente
       resetTranscript();
       setResponse('');
       setError(null);
@@ -339,7 +339,7 @@ function App() {
             <div className="flex-grow w-full flex items-center justify-center pointer-events-auto">
               <Conversation
                 isDarkMode={isDarkMode}
-                transcript={transcript || userPrompt}
+                transcript={isListening ? transcript : userPrompt}
                 response={response}
                 isLoading={isLoading}
                 isOutOfContext={isOutOfContext}

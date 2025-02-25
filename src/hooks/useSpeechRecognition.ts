@@ -130,11 +130,13 @@ export const useSpeechRecognition = ({
           isFinalTranscriptProcessingRef.current = true;
           onFinalTranscript?.(transcript);
           
-          // Resetta la trascrizione dopo un breve ritardo
+          // Non resettiamo più la trascrizione qui, lasciamo che sia App.tsx a gestirlo
+          /*
           setTimeout(() => {
             setTranscript('');
             isFinalTranscriptProcessingRef.current = false;
           }, 500);
+          */
         }
       }, 2000); // 2 secondi di silenzio per considerare la frase completata
       
@@ -145,11 +147,13 @@ export const useSpeechRecognition = ({
         isFinalTranscriptProcessingRef.current = true;
         onFinalTranscript?.(transcriptText);
         
-        // Resetta la trascrizione dopo un breve ritardo
+        // Non resettiamo più la trascrizione qui, lasciamo che sia App.tsx a gestirlo
+        /*
         setTimeout(() => {
           setTranscript('');
           isFinalTranscriptProcessingRef.current = false;
         }, 500);
+        */
       }
     };
 
@@ -257,6 +261,9 @@ export const useSpeechRecognition = ({
     if (silenceTimeoutRef.current) {
       window.clearTimeout(silenceTimeoutRef.current);
     }
+    
+    // Reset dello stato di elaborazione della trascrizione finale
+    isFinalTranscriptProcessingRef.current = false;
     
     setIsListening(false);
   }, []);
