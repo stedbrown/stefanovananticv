@@ -7,5 +7,6 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['lucide-react'],
   },
-  base: '/stefanovananticv/',
+  // Rimuovo il base path per il deploy su Vercel
+  // base: '/stefanovananticv/',
 });
