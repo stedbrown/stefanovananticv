@@ -88,7 +88,7 @@ function App() {
         setIsOutOfContext(false);
         setBlobState('responding');
       }
-      
+
       playResponse();
       setResponse(aiResponse);
       
@@ -180,14 +180,14 @@ function App() {
     } else {
       setBlobState('idle');
     }
-    
+
     return () => {
       if (timer) {
         clearTimeout(timer);
       }
     };
   }, [isListening, isLoading, error, response, isOutOfContext]);
-  
+
   const toggleListening = useCallback(async () => {
     if (!isListening) {
       try {
@@ -299,7 +299,7 @@ function App() {
   }
 
   try {
-    return (
+  return (
       <div className={`relative min-h-screen ${isDarkMode ? 'bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900' : 'bg-gradient-to-br from-gray-50 via-blue-50 to-gray-100'} overflow-hidden transition-colors duration-500`}>
         {/* Contenitore principale con z-index per controllare la sovrapposizione */}
         <div className="relative z-0 min-h-screen flex flex-col">
@@ -312,15 +312,15 @@ function App() {
               />
               
               <ErrorMessage message={error} />
-            </div>
-            
+        </div>
+        
             {/* AudioVisualizer posizionato sotto l'header */}
             <div className="w-full flex justify-center mb-6">
-              {/* Area cliccabile limitata al blob */}
+              {/* Area cliccabile limitata al blob con sfondo trasparente per evitare problemi su mobile */}
               <div className={`w-[250px] h-[250px] pointer-events-auto relative rounded-full ${
                 isDarkMode 
-                  ? '' 
-                  : ''
+                  ? 'bg-transparent' 
+                  : 'bg-transparent'
               }`}>
                 <AudioVisualizer
                   isDarkMode={isDarkMode}
@@ -351,15 +351,15 @@ function App() {
           {/* Footer posizionato in fondo alla pagina */}
           <div className="w-full pointer-events-auto z-10">
             <Footer isDarkMode={isDarkMode} />
-          </div>
+                </div>
           
           <ThemeToggle 
             isDarkMode={isDarkMode} 
             onToggle={toggleDarkMode} 
           />
-        </div>
       </div>
-    );
+    </div>
+  );
   } catch (error) {
     console.error('Errore durante il rendering dell\'applicazione:', error);
     return <FallbackComponent />;

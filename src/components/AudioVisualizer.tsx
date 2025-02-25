@@ -107,7 +107,7 @@ const AudioVisualizer: React.FC<AudioVisualizerProps> = ({
     let saturation = 100; // Massima saturazione per colori più vividi
     const lightness = isDark ? 
       (80 + Math.sin(time * 0.3) * 10) : // Più luminoso in modalità scura
-      (70 + Math.sin(time * 0.3) * 10);  // Più scuro in modalità chiara per contrasto
+      (60 + Math.sin(time * 0.3) * 10);  // Ridotto da 70 a 60 per migliorare il contrasto in modalità chiara
     
     // Modifica i colori in base allo stato del blob
     switch (currentBlobState) {
@@ -138,16 +138,22 @@ const AudioVisualizer: React.FC<AudioVisualizerProps> = ({
         break;
     }
     
+    // Aumentato l'opacità per migliorare la visibilità in modalità chiara
+    const opacityBase = isDark ? 0.9 : 0.95;
+    const opacitySecondary = isDark ? 0.8 : 0.85;
+    const opacityHighlight = isDark ? 0.7 : 0.75;
+    const opacityGlow = isDark ? 0.6 : 0.65;
+    
     return {
       hue1,
       hue2,
-      primary: `hsla(${hue1}, ${saturation}%, ${lightness}%, ${0.9 + intensity * 0.05})`,
-      secondary: `hsla(${hue2}, ${saturation}%, ${lightness + 10}%, ${0.8 + intensity * 0.1})`,
-      highlight: `hsla(${hue1}, ${saturation}%, ${lightness + 20}%, ${0.7 + intensity * 0.2})`,
-      glow: `hsla(${hue1}, ${saturation}%, ${lightness + 30}%, ${0.6 + intensity * 0.3})`,
+      primary: `hsla(${hue1}, ${saturation}%, ${lightness}%, ${opacityBase + intensity * 0.05})`,
+      secondary: `hsla(${hue2}, ${saturation}%, ${lightness + 10}%, ${opacitySecondary + intensity * 0.1})`,
+      highlight: `hsla(${hue1}, ${saturation}%, ${lightness + 20}%, ${opacityHighlight + intensity * 0.2})`,
+      glow: `hsla(${hue1}, ${saturation}%, ${lightness + 30}%, ${opacityGlow + intensity * 0.3})`,
       background: isDark ? 
         `hsla(${hue1}, ${saturation}%, ${lightness - 20}%, 0.1)` :
-        `hsla(${hue1}, ${saturation}%, ${Math.max(lightness - 10, 0)}%, 0.1)`
+        `hsla(${hue1}, ${saturation}%, ${Math.max(lightness - 5, 0)}%, 0.15)` // Aumentato l'opacità e ridotto il decremento di luminosità
     };
   }, []);
 
@@ -399,7 +405,7 @@ const AudioVisualizer: React.FC<AudioVisualizerProps> = ({
       ctx.closePath();
 
       // Aggiungi un bordo luminoso sottile per migliorare l'effetto di sopraelevazione
-      ctx.strokeStyle = `hsla(${colors.hue1}, 100%, 85%, 0.6)`;
+      ctx.strokeStyle = `hsla(${colors.hue1}, 100%, ${isDarkMode ? 85 : 75}%, ${isDarkMode ? 0.6 : 0.7})`;
       ctx.lineWidth = 1.5;
       ctx.stroke();
 
@@ -409,17 +415,17 @@ const AudioVisualizer: React.FC<AudioVisualizerProps> = ({
         updatedCenterX, updatedCenterY, radius * 1.5
       );
       
-      // Colori per effetto gelatina traslucida con maggiore trasparenza
-      blobGradient.addColorStop(0, `hsla(${colors.hue1}, 100%, ${isDarkMode ? 90 : 80}%, ${0.85})`);
-      blobGradient.addColorStop(0.4, `hsla(${colors.hue1}, 100%, ${isDarkMode ? 80 : 70}%, ${0.7})`);
-      blobGradient.addColorStop(0.7, `hsla(${colors.hue2}, 95%, ${isDarkMode ? 70 : 60}%, ${0.5})`);
+      // Colori per effetto gelatina traslucida con maggiore opacità per il tema chiaro
+      blobGradient.addColorStop(0, `hsla(${colors.hue1}, 100%, ${isDarkMode ? 90 : 80}%, ${isDarkMode ? 0.85 : 0.9})`);
+      blobGradient.addColorStop(0.4, `hsla(${colors.hue1}, 100%, ${isDarkMode ? 80 : 70}%, ${isDarkMode ? 0.7 : 0.8})`);
+      blobGradient.addColorStop(0.7, `hsla(${colors.hue2}, 95%, ${isDarkMode ? 70 : 60}%, ${isDarkMode ? 0.5 : 0.6})`);
       blobGradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
       
       ctx.fillStyle = blobGradient;
-      // Ombra più pronunciata per effetto sopraelevato
+      // Ombra più pronunciata per effetto sopraelevato, con valori diversi per tema chiaro e scuro
       ctx.shadowColor = colors.primary;
-      ctx.shadowBlur = 30 + (isListening ? audioIntensity * 40 : 15);
-      ctx.shadowOffsetY = 5; // Leggero offset per dare sensazione di altezza
+      ctx.shadowBlur = isDarkMode ? (30 + (isListening ? audioIntensity * 40 : 15)) : (25 + (isListening ? audioIntensity * 35 : 12));
+      ctx.shadowOffsetY = isDarkMode ? 5 : 4; // Leggero offset per dare sensazione di altezza
       ctx.fill();
 
       // Effetto di riflessione della luce tipico della gelatina
@@ -549,7 +555,8 @@ const AudioVisualizer: React.FC<AudioVisualizerProps> = ({
       style={{
         background: 'transparent',
         backdropFilter: 'none',
-        WebkitBackdropFilter: 'none'
+        WebkitBackdropFilter: 'none',
+        touchAction: 'manipulation' // Migliora la gestione del touch su mobile
       }}
     />
   );
