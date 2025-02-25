@@ -123,7 +123,7 @@ const Header: React.FC<HeaderProps> = ({ isDarkMode, blobState }) => {
         </div>
         
         <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-          Fai domande sul mio curriculum, competenze ed esperienza professionale
+          Fai domande sul mio curriculum, competenze ed aspetti professionali
         </p>
       </div>
     </div>
