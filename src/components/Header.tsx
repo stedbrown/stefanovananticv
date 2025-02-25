@@ -8,10 +8,17 @@ interface HeaderProps extends ThemeProps {
 
 const Header: React.FC<HeaderProps> = ({ isDarkMode, blobState }) => {
   // Stato per gestire l'espansione dell'header su mobile
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   // Stato per l'animazione
   const [isAnimating, setIsAnimating] = useState(false);
+
+  // Effetto per gestire la compressione dell'header quando si inizia a parlare
+  useEffect(() => {
+    if (isMobile && blobState === 'listening' && isExpanded) {
+      setIsExpanded(false);
+    }
+  }, [blobState, isMobile, isExpanded]);
 
   // Rileva se il dispositivo è mobile
   useEffect(() => {
@@ -102,14 +109,25 @@ const Header: React.FC<HeaderProps> = ({ isDarkMode, blobState }) => {
         ? 'bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-md border border-slate-700/40 text-white/90' 
         : 'bg-gradient-to-br from-white/80 to-slate-100/80 backdrop-blur-md border border-gray-200/40 text-gray-800'
     } shadow-xl transition-all duration-300 pointer-events-auto z-20`}>
-      <div className="flex flex-col md:flex-row items-center justify-between mb-3 md:mb-6">
-        <div className={`flex items-center mb-2 md:mb-0 w-full ${isMobile && !isExpanded ? 'justify-center' : 'justify-between'}`}>
-          <div className={`flex flex-col ${isMobile && !isExpanded ? 'items-center' : 'items-start'} transition-all duration-300 ease-in-out`}>
+      <div className={`flex flex-col md:flex-row items-center ${isMobile ? 'gap-4' : 'gap-8'} justify-between mb-3 md:mb-6`}>
+        <div className={`flex items-center w-full ${isMobile ? (isExpanded ? 'justify-start pl-2' : 'justify-center') : 'justify-start'}`}>
+          <div className={`flex flex-col ${isMobile && !isExpanded ? 'items-center' : 'items-start'} transition-all duration-500 ease-in-out`}>
             <div className="flex items-center">
-              <Sparkles className={`${isMobile ? 'w-7 h-7' : 'w-6 h-6'} mr-3 ${isDarkMode ? 'text-blue-400' : 'text-blue-500'} transition-all duration-300`} />
-              <h1 className={`${isMobile ? 'text-xl' : 'text-2xl md:text-3xl'} font-light transition-all duration-300 ease-in-out`}>
-                {isMobile ? 'CV Stefano Vananti' : 'Assistente CV di Stefano Vananti'}
-              </h1>
+              <Sparkles className={`${isMobile ? 'w-7 h-7' : 'w-8 h-8'} mr-3 ${isDarkMode ? 'text-blue-400' : 'text-blue-500'} transition-all duration-300`} />
+              {isMobile ? (
+                <h1 className="text-xl font-light transition-all duration-300 ease-in-out tracking-wide">
+                  CV Stefano Vananti
+                </h1>
+              ) : (
+                <div className="flex flex-col items-start">
+                  <h1 className="text-2xl md:text-3xl font-light transition-all duration-300 ease-in-out tracking-wide">
+                    Assistente CV
+                  </h1>
+                  <h2 className="text-xl md:text-2xl font-light transition-all duration-300 ease-in-out tracking-wide text-blue-400">
+                    di Stefano Vananti
+                  </h2>
+                </div>
+              )}
             </div>
             {isMobile && !isExpanded && (
               <p className={`text-sm mt-2 px-4 py-1 rounded-full ${
@@ -138,56 +156,87 @@ const Header: React.FC<HeaderProps> = ({ isDarkMode, blobState }) => {
         </div>
         
         {(!isMobile || isExpanded) && (
-          <div className={`flex items-center space-x-2 pointer-events-auto mt-2 md:mt-0 transition-all duration-300 ease-in-out ${isMobile ? 'transform-gpu' : ''} ${isMobile && isExpanded ? 'opacity-100 max-h-20' : isMobile ? 'opacity-0 max-h-0 overflow-hidden' : ''}`}>
+          <div 
+            className={`
+              flex items-center justify-end pointer-events-auto
+              transition-all duration-500 ease-in-out transform-gpu
+              ${isMobile ? 'w-full' : 'min-w-[200px]'}
+              ${isMobile ? 'origin-top' : ''} 
+              ${isMobile && isExpanded 
+                ? 'opacity-100 translate-y-0 scale-100' 
+                : isMobile 
+                  ? 'opacity-0 -translate-y-4 scale-95' 
+                  : ''
+              }
+            `}
+          >
             <a
               href="/documents/cv_stefano_vananti.pdf"
               download="CV_Stefano_Vananti.pdf"
+              className={`
+                group
+                flex items-center gap-2 px-5 py-2.5 rounded-full
+                bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500
+                hover:from-blue-600 hover:via-indigo-600 hover:to-purple-600
+                text-white font-medium shadow-lg
+                transform transition-all duration-300 ease-out
+                hover:scale-105 hover:shadow-xl hover:shadow-blue-500/20
+                ${isAnimating ? 'animate-bounce-subtle' : ''}
+                ${isMobile ? 'w-full justify-center' : 'justify-center min-w-[160px]'}
+              `}
               style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                padding: isMobile ? '0.5rem 1rem' : '0.5rem 1.25rem',
-                borderRadius: '9999px',
-                fontSize: isMobile ? '0.9rem' : '0.875rem',
-                fontWeight: '500',
-                color: 'white',
-                background: isDarkMode 
-                  ? 'linear-gradient(to right, #3b82f6, #4f46e5, #7c3aed)' 
-                  : 'linear-gradient(to right, #3b82f6, #4f46e5, #7c3aed)',
-                boxShadow: '0 2px 6px rgba(0, 0, 0, 0.06)',
-                transition: 'all 0.3s ease',
-                cursor: 'pointer',
-                border: 'none',
                 backdropFilter: 'blur(8px)',
-                textDecoration: 'none'
               }}
-              onMouseOver={(e) => {
-                e.currentTarget.style.transform = 'translateY(-1px) scale(1.02)';
-                e.currentTarget.style.boxShadow = '0 4px 12px rgba(79, 70, 229, 0.15)';
-              }}
-              onMouseOut={(e) => {
-                e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                e.currentTarget.style.boxShadow = '0 2px 6px rgba(0, 0, 0, 0.06)';
-              }}
-              onClick={() => console.log("Download CV cliccato")}
             >
-              <FileDown style={{ width: isMobile ? '20px' : '16px', height: isMobile ? '20px' : '16px' }} />
-              <span style={{ fontWeight: '600' }}>Scarica CV</span>
+              <FileDown className={`
+                ${isMobile ? 'w-5 h-5' : 'w-5 h-5'} 
+                transition-all duration-300 
+                group-hover:rotate-6 group-hover:scale-110
+              `} />
+              <span className="font-semibold whitespace-nowrap">Scarica CV</span>
             </a>
           </div>
         )}
       </div>
       
       {(!isMobile || isExpanded) && (
-        <div className={`flex flex-col items-center p-4 rounded-lg ${
-          isDarkMode ? 'bg-slate-800/50 border border-slate-700/30' : 'bg-white/50 border border-gray-200/30'
-        } transition-all duration-300 ease-in-out transform-gpu ${isMobile ? (isExpanded ? 'opacity-100 max-h-96 scale-100' : 'opacity-0 max-h-0 scale-95 overflow-hidden') : ''}`}>
-          <div className={`text-lg flex items-center justify-center ${getStatusClass()} mb-2 transition-all duration-300`}>
+        <div 
+          className={`
+            flex flex-col items-center p-4 rounded-lg mt-2
+            ${isDarkMode 
+              ? 'bg-slate-800/50 border border-slate-700/30' 
+              : 'bg-white/50 border border-gray-200/30'
+            }
+            transition-all duration-500 ease-in-out transform-gpu
+            ${isMobile 
+              ? isExpanded
+                ? 'opacity-100 translate-y-0 scale-100 max-h-96' 
+                : 'opacity-0 -translate-y-4 scale-95 max-h-0 overflow-hidden'
+              : ''
+            }
+            ${isAnimating ? 'animate-content-slide' : ''}
+          `}
+        >
+          <div 
+            className={`
+              text-lg flex items-center justify-center gap-2
+              ${getStatusClass()} 
+              transition-all duration-300 transform
+              ${isAnimating ? 'animate-bounce-subtle' : ''}
+            `}
+          >
             {icon}
-            <span>{text}</span>
+            <span className="animate-fade-in">{text}</span>
           </div>
           
-          <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'} transition-all duration-300`}>
+          <p 
+            className={`
+              text-sm mt-2
+              ${isDarkMode ? 'text-gray-300' : 'text-gray-600'} 
+              transition-all duration-300 transform
+              ${isAnimating ? 'animate-slide-up' : ''}
+            `}
+          >
             Fai domande sul mio curriculum, competenze ed aspetti professionali
           </p>
         </div>
